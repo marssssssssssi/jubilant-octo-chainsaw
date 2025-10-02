@@ -1,3 +1,6 @@
+#include <vector>
+#include <iostream>
+
 // Бинарная куча (Binary Heap) - min-heap
 class BinaryHeap {
 private:
@@ -7,7 +10,7 @@ private:
 public:
     void insert(int key) { heap.push_back(key); heapifyUp(heap.size()-1); }
     int deleteMin() { if (heap.empty()) return -1; int minVal = heap[0]; heap[0] = heap.back(); heap.pop_back(); heapifyDown(0); return minVal; }
-    int getMin() const { return heap.empty() ? -1 : heap[0]; }
+    int getMin() { return heap.empty() ? -1 : heap[0]; }
 };
 
 // Куча Фибоначчи (Fibonacci Heap) - упрощённая
@@ -27,15 +30,15 @@ private:
     std::vector<std::vector<std::pair<std::string, std::string>>> table;
     size_t hash(const std::string& key) { size_t h = 0; for (char c : key) h += c; return h % table.size(); }
 public:
-    HashTable(size_t size = 10) : table(size) {}
-    void set(const std::string& key, const std::string& value) { table[hash(key)].push_back({key, value}); }
-    std::string get(const std::string& key) { for (auto& p : table[hash(key)]) if (p.first == key) return p.second; throw std::runtime_error(""); }
+    HashTable(int size) : table(size) {}
+    void put(const std::string& key, const std::string& value) { table[hash(key)].push_back({key, value}); }
+    std::string get(const std::string& key) { for (auto& p : table[hash(key)]) if (p.first == key) return p.second; return ""; }
     void remove(const std::string& key) { for (auto it = table[hash(key)].begin(); it != table[hash(key)].end(); ++it) if (it->first == key) { table[hash(key)].erase(it); break; } }
 };
 
 int main() {
     BinaryHeap bh; bh.insert(3); bh.insert(1); std::cout << bh.getMin() << std::endl;  // 1
     FibonacciHeap fh; fh.insert(5); fh.insert(3); std::cout << fh.extractMin() << std::endl;  // 3
-    HashTable ht; ht.set("Alice", "Jan"); std::cout << ht.get("Alice") << std::endl;  // Jan
+    HashTable ht(10); ht.put("Alice", "Jan"); std::cout << ht.get("Alice") << std::endl;  // Jan
     return 0;
 }
