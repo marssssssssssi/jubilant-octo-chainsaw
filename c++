@@ -1,29 +1,41 @@
-# Бинарная куча (Binary Heap) - min-heap
-class BinaryHeap:
-    def __init__(self): self.heap = []
-    def insert(self, key): self.heap.append(key); self._up(len(self.heap)-1)
-    def delete_min(self): return self._extract()
-    def get_min(self): return self.heap[0] if self.heap else None
-    def _up(self, i): while i > 0 and self.heap[(i-1)//2] > self.heap[i]: self.heap[i], self.heap[(i-1)//2] = self.heap[(i-1)//2], self.heap[i]; i = (i-1)//2
-    def _down(self, i): size = len(self.heap); while True: smallest = i; l, r = 2*i+1, 2*i+2; if l < size and self.heap[l] < self.heap[smallest]: smallest = l; if r < size and self.heap[r] < self.heap[smallest]: smallest = r; if smallest == i: break; self.heap[i], self.heap[smallest] = self.heap[smallest], self.heap[i]; i = smallest
-    def _extract(self): if not self.heap: return None; min_val = self.heap[0]; self.heap[0] = self.heap.pop(); self._down(0); return min_val
+// Бинарная куча (Binary Heap) - min-heap
+class BinaryHeap {
+private:
+    std::vector<int> heap;
+    void heapifyUp(int i) { while (i > 0 && heap[(i-1)/2] > heap[i]) { std::swap(heap[i], heap[(i-1)/2]); i = (i-1)/2; } }
+    void heapifyDown(int i) { int size = heap.size(); while (true) { int smallest = i; int l = 2*i+1, r = 2*i+2; if (l < size && heap[l] < heap[smallest]) smallest = l; if (r < size && heap[r] < heap[smallest]) smallest = r; if (smallest == i) break; std::swap(heap[i], heap[smallest]); i = smallest; } }
+public:
+    void insert(int key) { heap.push_back(key); heapifyUp(heap.size()-1); }
+    int deleteMin() { if (heap.empty()) return -1; int minVal = heap[0]; heap[0] = heap.back(); heap.pop_back(); heapifyDown(0); return minVal; }
+    int getMin() const { return heap.empty() ? -1 : heap[0]; }
+};
 
-# Куча Фибоначчи (Fibonacci Heap) - упрощённая
-class FibonacciNode: def __init__(self, key): self.key = key; self.child = None; self.sibling = None
-class FibonacciHeap:
-    def __init__(self): self.min_node = None
-    def insert(self, key): node = FibonacciNode(key); if not self.min_node or key < self.min_node.key: self.min_node = node
-    def extract_min(self): if not self.min_node: return None; min_key = self.min_node.key; self.min_node = None; return min_key
+// Куча Фибоначчи (Fibonacci Heap) - упрощённая
+struct FibonacciNode { int key; FibonacciNode* child; FibonacciNode* sibling; FibonacciNode(int k) : key(k), child(nullptr), sibling(nullptr) {} };
+class FibonacciHeap {
+private:
+    FibonacciNode* minNode;
+public:
+    FibonacciHeap() : minNode(nullptr) {}
+    void insert(int key) { FibonacciNode* node = new FibonacciNode(key); if (!minNode || key < minNode->key) minNode = node; }
+    int extractMin() { if (!minNode) return -1; int minKey = minNode->key; delete minNode; minNode = nullptr; return minKey; }
+};
 
-# Хеш-таблица (Hash Table)
-class HashTable:
-    def __init__(self, size=10): self.size = size; self.table = [[] for _ in range(size)]
-    def _hash(self, key): return hash(key) % self.size
-    def set(self, key, value): self.table[self._hash(key)].append([key, value])
-    def get(self, key): for k, v in self.table[self._hash(key)]: if k == key: return v; raise KeyError
-    def remove(self, key): for i, (k, v) in enumerate(self.table[self._hash(key)]): if k == key: del self.table[self._hash(key)][i]; return
+// Хеш-таблица (Hash Table)
+class HashTable {
+private:
+    std::vector<std::vector<std::pair<std::string, std::string>>> table;
+    size_t hash(const std::string& key) { size_t h = 0; for (char c : key) h += c; return h % table.size(); }
+public:
+    HashTable(size_t size = 10) : table(size) {}
+    void set(const std::string& key, const std::string& value) { table[hash(key)].push_back({key, value}); }
+    std::string get(const std::string& key) { for (auto& p : table[hash(key)]) if (p.first == key) return p.second; throw std::runtime_error(""); }
+    void remove(const std::string& key) { for (auto it = table[hash(key)].begin(); it != table[hash(key)].end(); ++it) if (it->first == key) { table[hash(key)].erase(it); break; } }
+};
 
-# Пример использования
-bh = BinaryHeap(); bh.insert(3); bh.insert(1); print(bh.get_min())  # 1
-fh = FibonacciHeap(); fh.insert(5); fh.insert(3); print(fh.extract_min())  # 3
-ht = HashTable(); ht.set('Alice', 'Jan'); print(ht.get('Alice'))  # Jan
+int main() {
+    BinaryHeap bh; bh.insert(3); bh.insert(1); std::cout << bh.getMin() << std::endl;  // 1
+    FibonacciHeap fh; fh.insert(5); fh.insert(3); std::cout << fh.extractMin() << std::endl;  // 3
+    HashTable ht; ht.set("Alice", "Jan"); std::cout << ht.get("Alice") << std::endl;  // Jan
+    return 0;
+}
